@@ -376,10 +376,21 @@ body.in-intro #musicbtn{margin-left:auto}
   .stop{transition:none}
 }
 
-.acards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1em;margin-top:1em}
-.acard{background:var(--paper);border:3px solid var(--red);border-radius:16px;padding:1em;display:flex;flex-direction:column;gap:.5em}
-.acard h3{margin:0;font-family:var(--serif)}
 .arcade-total{font-size:1.3em;font-weight:900;color:var(--hl);text-align:center;margin:.4em 0}
+.wins{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:1em;margin-top:1em}
+.win{background:var(--paper);border:4px solid var(--red);border-radius:14px;padding:.7em .5em .9em;cursor:pointer;text-align:center;box-shadow:0 4px 0 var(--red-d);font-family:inherit}
+.win:hover,.win:focus-visible{transform:translateY(-3px)}
+.winscreen{background:#2b1013;border-radius:8px;font-size:2.4em;line-height:1.6;margin-bottom:.4em;box-shadow:inset 0 0 0 3px #000}
+.winname{font-family:var(--serif);font-weight:900;font-size:1em;color:var(--ink)}
+.winbest{font-size:.8em;opacity:.75;margin-top:.2em;color:var(--ink)}
+.ginfocard{position:relative;max-width:480px;width:90vw}
+.ginfoscreen{background:#2b1013;border-radius:12px;font-size:3.6em;line-height:1.5;margin-bottom:.3em;box-shadow:inset 0 0 0 4px #000}
+.ginfoarrow{position:absolute;top:45%;transform:translateY(-50%);background:var(--red);color:#fff;border:0;width:2.1em;height:2.1em;border-radius:50%;font-size:1.5em;line-height:1;cursor:pointer;box-shadow:0 3px 0 var(--red-d)}
+.ginfoarrow.left{left:-1.05em}
+.ginfoarrow.right{right:-1.05em}
+.ginfodots{display:flex;justify-content:center;gap:.35em;margin-top:.7em}
+.ginfodots .dot{width:.5em;height:.5em;border-radius:50%;background:var(--silver);display:inline-block}
+.ginfodots .dot.on{background:var(--red)}
 </style>
 </head>
 <body>
@@ -452,6 +463,7 @@ body.in-intro #musicbtn{margin-left:auto}
 
 <main id="view"></main>
 <div id="game" class="game"></div>
+<div id="ginfo" class="game"></div>
 <div id="celeb" class="celeb"></div>
 </div>
 <canvas id="confetti"></canvas>
@@ -467,19 +479,22 @@ const LEVELS = {
 };
 
 const ARCADE = {
-  flip:{name:'彩色草莓翻牌戰',sub:'Naomi 對戰全體賓客，比誰配到的草莓多',coinRule:'配到 1 對 +15 枚，獲勝再加 50 枚'},
-  catch:{name:'雙人草莓接接樂',sub:'兩人同時接住掉下來的草莓，30 秒比手速',coinRule:'每 1 分 +3 枚，獲勝再加 50 枚'},
-  code:{name:'草莓密碼',sub:'記住越來越長的顏色順序，輪流照著按',coinRule:'每通過 1 輪 +20 枚'},
-  mole:{name:'草莓王國打地鼠',sub:'限時 30 秒，比自己的最高分',coinRule:'每 1 分 +4 枚'},
-  match:{name:'草莓連連看',sub:'找出兩個相同的草莓，路徑不能超過兩個轉角',coinRule:'配對成功 +12 枚，全部配對完成再加碼剩餘秒數'},
-  ninja:{name:'草莓水果忍者',sub:'手指滑過草莓、星星切開得分，小心黑色壞草莓',coinRule:'每 1 分 +3 枚'},
-  puzzle:{name:'草莓拼圖',sub:'把打散的公主圖片拼回原樣，越快越好',coinRule:'完成越快，賺越多枚'}
+  flip:{name:'彩色草莓翻牌戰',sub:'Naomi 對戰全體賓客，比誰配到的草莓多',coinRule:'配到 1 對 +15 枚，獲勝再加 50 枚',icon:'🍓'},
+  catch:{name:'雙人草莓接接樂',sub:'兩人同時接住掉下來的草莓，30 秒比手速',coinRule:'每 1 分 +3 枚，獲勝再加 50 枚',icon:'🧺'},
+  code:{name:'草莓密碼',sub:'記住越來越長的顏色順序，輪流照著按',coinRule:'每通過 1 輪 +20 枚',icon:'🎵'},
+  mole:{name:'草莓王國打地鼠',sub:'限時 30 秒，比自己的最高分',coinRule:'每 1 分 +4 枚',icon:'🔨'},
+  match:{name:'草莓連連看',sub:'找出兩個相同的草莓，路徑不能超過兩個轉角',coinRule:'配對成功 +12 枚，全部配對完成再加碼剩餘秒數',icon:'🔍'},
+  ninja:{name:'草莓水果忍者',sub:'手指滑過草莓、星星切開得分，小心黑色壞草莓',coinRule:'每 1 分 +3 枚',icon:'🥷'},
+  puzzle:{name:'草莓拼圖',sub:'把打散的公主圖片拼回原樣，越快越好',coinRule:'完成越快，賺越多枚',icon:'🧩'},
+  reaction:{name:'反應力大考驗',sub:'畫面變綠就馬上點下去，考驗你的反射神經，共 6 輪',coinRule:'平均反應時間越短，賺越多枚',icon:'⚡'},
+  rps:{name:'剪刀石頭布擂台',sub:'和草莓王國守衛比賽，七戰制，贏越多分數越高',coinRule:'每贏 1 局 +30 枚，贏多於輸再加 40 枚',icon:'✊'},
+  numtap:{name:'草莓速配數字',sub:'照 1 到 16 的順序，依序點下去，越快越好',coinRule:'完成越快，賺越多枚',icon:'🔢'}
 };
 
 const DEF = {
   players:['Naomi','朋友 A','朋友 B','朋友 C'],
   l1:{big:11,small:9,bigFound:0,smallFound:0,bigRate:30,smallRate:60,settled:false},
-  arcade:{coins:0,best:{flip:0,catch:0,code:0,mole:0,match:0,ninja:0,puzzle:0}},
+  arcade:{coins:0,best:{flip:0,catch:0,code:0,mole:0,match:0,ninja:0,puzzle:0,reaction:0,rps:0,numtap:0}},
   order:{},bought:{},
   music:true,vol:60,
   moleBest:0,
@@ -778,17 +793,43 @@ function vLevel(i){
     <div class="cols">${recipe}<div>${panel}<div class="row" style="justify-content:flex-end;margin-top:1em">${next}</div></div></div>`;
 }
 function vArcade(){
-  const cards=Object.entries(ARCADE).map(([k,g])=>`<div class="acard">
-    <h3>${esc(g.name)}</h3><div class="sub">${esc(g.sub)}</div>
-    <p class="hint">${esc(g.coinRule)}</p>
-    <div class="row" style="justify-content:space-between;align-items:center">
-      <span class="stamp">單次最高 +${S.arcade.best[k]||0} 枚</span>
-      <button class="pb big" data-act="play" data-k="${k}">▶ 開始遊戲</button>
-    </div>
-  </div>`).join('');
-  return `<div class="lvhead"><div><h2>遊戲大廳</h2><div class="sub">想玩幾次就玩幾次，分數會自動換算成甯甯幣</div></div></div>
+  const wins=Object.entries(ARCADE).map(([k,g])=>`<button class="win" data-act="ginfo" data-k="${k}">
+    <div class="winscreen">${g.icon||'🍓'}</div>
+    <div class="winname">${esc(g.name)}</div>
+    <div class="winbest">${S.arcade.best[k]?`單次最高 +${S.arcade.best[k]}`:'尚未挑戰'}</div>
+  </button>`).join('');
+  return `<div class="lvhead"><div><h2>遊戲大廳</h2><div class="sub">點一台機台看玩法，玩幾次都可以，分數會自動換算成甯甯幣</div></div></div>
     <div class="arcade-total">已從遊戲大廳賺到 <b>${S.arcade.coins}</b> 枚</div>
-    <div class="acards">${cards}</div>`;
+    <div class="wins">${wins}</div>`;
+}
+
+/* ---- 遊戲介紹瀏覽器（像 Mario Party 選擇畫面） ---- */
+let ginfoIdx=0;
+function ginfoOpen(key){
+  const keys=Object.keys(ARCADE); const idx=keys.indexOf(key);
+  ginfoIdx = idx>=0?idx:0;
+  paintGinfo();
+  document.getElementById('ginfo').classList.add('on');
+}
+function ginfoClose(){ document.getElementById('ginfo').classList.remove('on'); }
+function ginfoStep(d){ const keys=Object.keys(ARCADE); ginfoIdx=(ginfoIdx+d+keys.length)%keys.length; paintGinfo(); }
+function paintGinfo(){
+  const keys=Object.keys(ARCADE), key=keys[ginfoIdx], g=ARCADE[key];
+  const el=document.getElementById('ginfo'); if(!el) return;
+  el.innerHTML=`<div class="gbar"><b>遊戲介紹</b><button class="pb ghost" data-act="ginfoclose">關閉</button></div>
+    <div class="gbody" style="display:grid;place-items:center">
+      <div class="gcard ginfocard">
+        <button class="ginfoarrow left" data-act="ginfoprev" aria-label="上一個遊戲">‹</button>
+        <button class="ginfoarrow right" data-act="ginfonext" aria-label="下一個遊戲">›</button>
+        <div class="ginfoscreen">${g.icon||'🍓'}</div>
+        <h2>${esc(g.name)}</h2>
+        <p class="sub">${esc(g.sub)}</p>
+        <p class="hint">${esc(g.coinRule)}</p>
+        <div class="stamp" style="margin:.3em 0">${S.arcade.best[key]?`單次最高 +${S.arcade.best[key]} 枚`:'尚未挑戰'}</div>
+        <div class="row" style="justify-content:center"><button class="pb big" data-act="play" data-k="${key}">▶ 開始遊戲</button></div>
+        <div class="ginfodots">${keys.map((kk,ii)=>`<span class="dot ${ii===ginfoIdx?'on':''}"></span>`).join('')}</div>
+      </div>
+    </div>`;
 }
 
 function pendingTotal(){ return Object.entries(S.order).reduce((s,[n,q])=>s+PRICE[n]*q,0); }
@@ -893,7 +934,11 @@ document.addEventListener('click',e=>{
   else if(act==='settle'){ S.l1.settled=!S.l1.settled; if(S.l1.settled) burst(80); save(); render(); }
   else if(act==='fs') toggleFS();
   else if(act==='music') toggleMusic();
-  else if(act==='play') gameOpen(a.dataset.k);
+  else if(act==='ginfo') ginfoOpen(a.dataset.k);
+  else if(act==='ginfoclose') ginfoClose();
+  else if(act==='ginfoprev') ginfoStep(-1);
+  else if(act==='ginfonext') ginfoStep(1);
+  else if(act==='play'){ ginfoClose(); gameOpen(a.dataset.k); }
   else if(act==='gclose'){ gameClose(); render(); }
   else if(act==='gagain') gameOpen(a.dataset.k);
   else if(act==='istep'){ if(introStep===0&&+a.dataset.d>0){ enterFS(); startMusicPref(); } +a.dataset.d>0 ? nextIntro() : prevIntro(); }
@@ -913,6 +958,12 @@ document.addEventListener('change',e=>{
 });
 document.addEventListener('keydown',e=>{
   if(document.getElementById('game').classList.contains('on')) return;
+  if(document.getElementById('ginfo').classList.contains('on')){
+    if(e.key==='ArrowRight'){ e.preventDefault(); ginfoStep(1); }
+    else if(e.key==='ArrowLeft'){ e.preventDefault(); ginfoStep(-1); }
+    else if(e.key==='Escape'){ ginfoClose(); }
+    return;
+  }
   if(/INPUT|TEXTAREA/.test(document.activeElement.tagName)) return;
   if(e.key==='f'||e.key==='F'){ toggleFS(); return; }
   if(e.key==='m'||e.key==='M'){ toggleMusic(); return; }
@@ -1018,7 +1069,7 @@ function gameOpen(key){
   if(G.cleanup){ G.cleanup(); G.cleanup=null; }
   const el=document.getElementById('game'); el.classList.add('on');
   el.innerHTML=`<div class="gbar"><b>${esc(ARCADE[key].name)}</b><button class="pb ghost" data-act="gclose">離開遊戲</button></div><div class="gbody" id="gbody"></div>`;
-  ({flip:gFlip,catch:gCatch,code:gCode,mole:gMole,match:gMatch,ninja:gNinja,puzzle:gPuzzle})[key](key);
+  ({flip:gFlip,catch:gCatch,code:gCode,mole:gMole,match:gMatch,ninja:gNinja,puzzle:gPuzzle,reaction:gReaction,rps:gRps,numtap:gNumTap})[key](key);
 }
 function gameClose(){
   if(G.cleanup){ G.cleanup(); G.cleanup=null; }
@@ -1480,6 +1531,105 @@ function gPuzzle(i){
   document.getElementById('pzGo').addEventListener('click',()=>{
     document.getElementById('pzStart').remove(); running=true; t0=performance.now();
     iv=setInterval(()=>{ const el=document.getElementById('pzT'); if(el) el.textContent=fmt(Math.floor((performance.now()-t0)/1000)); },1000);
+  });
+}
+
+/* ---- 反應力大考驗 ---- */
+function gReaction(i){
+  const body=document.getElementById('gbody'); const T=[]; const later=(f,ms)=>{ const id=setTimeout(f,ms); T.push(id); return id; };
+  G.cleanup=()=>T.forEach(clearTimeout);
+  const ROUNDS=6; let round=0, times=[], waitId=null, tGo=0, state='idle';
+  body.innerHTML=`<div class="gstart" id="rxStart"><div class="gcard"><h2>反應力大考驗</h2><p>畫面變綠就馬上點下去，太早點會扣分，共 ${ROUNDS} 輪。</p>
+      <button class="pb" id="rxGo" style="font-size:1.6em">開始</button></div></div>
+    <div style="text-align:center;font-size:1.2em">第 <b id="rxN">0</b> / ${ROUNDS} 輪　平均 <b id="rxAvg">--</b> 毫秒</div>
+    <div id="rxPad" style="margin:1em auto;max-width:520px;aspect-ratio:16/9;border-radius:20px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:900;font-size:2em;color:#fff;background:#8E1420;cursor:pointer;user-select:none;touch-action:none">請稍候…</div>`;
+  const pad=document.getElementById('rxPad');
+  function nextRound(){
+    round++; document.getElementById('rxN').textContent=round;
+    state='wait'; pad.style.background='#8E1420'; pad.textContent='請稍候…';
+    waitId=later(()=>{ state='go'; tGo=performance.now(); pad.style.background='#4E7A3A'; pad.textContent='點下去！'; sfx(880,.12,'triangle',.15); }, 900+Math.random()*2200);
+  }
+  pad.addEventListener('pointerdown',e=>{
+    e.preventDefault();
+    if(state==='wait'){ clearTimeout(waitId); state='idle'; pad.style.background='#333'; pad.textContent='太早了！'; sfx(150,.25,'sawtooth',.09); times.push(700); later(after,700); }
+    else if(state==='go'){
+      state='idle'; const ms=Math.round(performance.now()-tGo); times.push(ms); pad.textContent=ms+' 毫秒'; sfx(1047,.14,'triangle',.16);
+      const avg=Math.round(times.reduce((a,b)=>a+b,0)/times.length); document.getElementById('rxAvg').textContent=avg;
+      later(after,650);
+    }
+  });
+  function after(){ if(round<ROUNDS) nextRound(); else finish(); }
+  function finish(){
+    const avg=Math.round(times.reduce((a,b)=>a+b,0)/times.length);
+    const coins=Math.max(20,Math.min(220,Math.round((600-avg)/2)));
+    arcadeResult(i,'測驗結束！',`平均反應時間 ${avg} 毫秒`, coins);
+  }
+  document.getElementById('rxGo').addEventListener('click',()=>{ document.getElementById('rxStart').remove(); nextRound(); });
+}
+
+/* ---- 剪刀石頭布擂台 ---- */
+function gRps(i){
+  const body=document.getElementById('gbody'); const T=[]; const later=(f,ms)=>{ const id=setTimeout(f,ms); T.push(id); return id; };
+  G.cleanup=()=>T.forEach(clearTimeout);
+  const ROUNDS=7, OPT=[['✌️','剪刀'],['✋','布'],['✊','石頭']], BEATS=[1,2,0];
+  let round=0, win=0, lose=0, tie=0, busy=false;
+  body.innerHTML=`<div class="gstart" id="rpStart"><div class="gcard"><h2>剪刀石頭布擂台</h2><p>和草莓王國守衛比賽，${ROUNDS} 戰制，贏越多分數越高！</p>
+      <button class="pb" id="rpGo" style="font-size:1.6em">開始</button></div></div>
+    <div style="text-align:center;font-size:1.2em">第 <b id="rpN">0</b> / ${ROUNDS} 局　勝 <b id="rpW">0</b>　負 <b id="rpL">0</b>　平 <b id="rpT">0</b></div>
+    <div style="display:flex;justify-content:center;align-items:center;gap:2em;font-size:4em;margin:.6em 0"><span id="rpMe">🧑</span><span style="font-size:.4em;align-self:center">VS</span><span id="rpCpu">🛡️</span></div>
+    <div id="rpMsg" style="text-align:center;font-size:1.3em;font-weight:700;min-height:1.4em"></div>
+    <div class="row" id="rpBtns" style="justify-content:center">${OPT.map((o,k)=>`<button class="pb big" data-k="${k}">${o[0]} ${o[1]}</button>`).join('')}</div>`;
+  const msg=s=>{ document.getElementById('rpMsg').textContent=s; };
+  document.getElementById('rpBtns').addEventListener('click',e=>{
+    const b=e.target.closest('[data-k]'); if(!b||busy||round>=ROUNDS) return;
+    busy=true; const p=+b.dataset.k, c=Math.floor(Math.random()*3);
+    document.getElementById('rpMe').textContent=OPT[p][0]; document.getElementById('rpCpu').textContent=OPT[c][0];
+    round++;
+    let r; if(p===c) r=0; else if(BEATS[p]===c) r=1; else r=2;
+    if(r===0){ tie++; msg('平手！'); sfx(440,.15,'triangle',.12); }
+    else if(r===1){ win++; msg('贏了這局！'); sfx(880,.16,'triangle',.16); }
+    else { lose++; msg('輸了這局…'); sfx(196,.2,'sawtooth',.08); }
+    document.getElementById('rpN').textContent=round; document.getElementById('rpW').textContent=win; document.getElementById('rpL').textContent=lose; document.getElementById('rpT').textContent=tie;
+    later(()=>{ busy=false; if(round>=ROUNDS) finish(); },700);
+  });
+  function finish(){
+    const coins=Math.max(0,win*30-lose*5)+(win>lose?40:0);
+    arcadeResult(i,'比賽結束！',`${ROUNDS} 戰：勝 ${win}、負 ${lose}、平 ${tie}`, coins);
+  }
+  document.getElementById('rpGo').addEventListener('click',()=>{ document.getElementById('rpStart').remove(); });
+}
+
+/* ---- 草莓速配數字 ---- */
+function gNumTap(i){
+  const body=document.getElementById('gbody'); let iv=null, t0=0, running=false;
+  G.cleanup=()=>clearInterval(iv);
+  const N=4, total=N*N;
+  let nums=[...Array(total).keys()].map(x=>x+1); shuffleArr(nums);
+  let next=1;
+  body.innerHTML=`<div class="gstart" id="ntStart"><div class="gcard"><h2>草莓速配數字</h2><p>照 1 到 ${total} 的順序，依序點下去，越快越好！</p>
+      <button class="pb" id="ntGo" style="font-size:1.6em">開始</button></div></div>
+    <div style="text-align:center;font-size:1.4em">時間 <b id="ntT">00.0</b> 秒　下一個 <b id="ntNext">1</b></div>
+    <div id="ntGrid" style="display:grid;grid-template-columns:repeat(${N},1fr);gap:.5em;max-width:480px;margin:.6em auto"></div>`;
+  const grid=document.getElementById('ntGrid');
+  grid.innerHTML=nums.map(n=>`<button data-n="${n}" style="aspect-ratio:1;font-size:1.6em;font-weight:900;border:3px solid var(--red);border-radius:12px;background:#fff;color:var(--hl);cursor:pointer">${n}</button>`).join('');
+  grid.addEventListener('click',e=>{
+    if(!running) return;
+    const b=e.target.closest('[data-n]'); if(!b) return;
+    const n=+b.dataset.n; if(n!==next){ sfx(196,.15,'sawtooth',.06); return; }
+    b.style.visibility='hidden'; b.disabled=true; sfx(700+next*8,.08,'triangle',.12);
+    next++; document.getElementById('ntNext').textContent=next<=total?next:'-';
+    if(next>total) finish();
+  });
+  function finish(){
+    running=false; clearInterval(iv);
+    const secs=(performance.now()-t0)/1000;
+    document.getElementById('ntT').textContent=secs.toFixed(1);
+    const coins=Math.max(20,Math.round(260-secs*8));
+    arcadeResult(i,'完成！',`花費時間 ${secs.toFixed(1)} 秒`, coins);
+  }
+  document.getElementById('ntGo').addEventListener('click',()=>{
+    document.getElementById('ntStart').remove(); running=true; t0=performance.now();
+    iv=setInterval(()=>{ document.getElementById('ntT').textContent=((performance.now()-t0)/1000).toFixed(1); },100);
   });
 }
 
