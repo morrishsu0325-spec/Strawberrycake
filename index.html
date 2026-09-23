@@ -1050,7 +1050,7 @@ function paintClock(){
   c.classList.toggle('end',T.left===0&&!T.run&&(typeof view==='number'||view==='hunt'));
   const b=document.getElementById('tbtn'); if(b) b.textContent=T.run?'暫停':(T.left===0?'時間到':'開始');
 }
-function beep(f=880,d=.25){ try{ const a=new (window.AudioContext||window.webkitAudioContext)(); const o=a.createOscillator(),g=a.createGain(); o.frequency.value=f;o.connect(g);g.connect(a.destination);g.gain.setValueAtTime(.2,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+d);o.start();o.stop(a.currentTime+d);}catch(e){} }
+function beep(f=880,d=.25){ try{ const a=getAC(); if(!a) return; const o=a.createOscillator(),g=a.createGain(); o.frequency.value=f;o.connect(g);g.connect(a.destination);g.gain.setValueAtTime(.2,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+d);o.start();o.stop(a.currentTime+d);}catch(e){} }
 function stopTimer(){ clearInterval(T.id); T.run=false; }
 function toggleTimer(){
   if(T.run){ stopTimer(); paintClock(); return; }
@@ -1196,11 +1196,28 @@ function tick(){
 }
 
 
+/* ============ 共用音效引擎（整個網站只用一個 AudioContext） ============ */
+function getAC(){
+  const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return null;
+  if(!Music.ctx||Music.ctx.state==='closed'){ try{ Music.ctx=new AC(); }catch(e){ return null; } }
+  if(Music.ctx.state!=='running'){ try{ Music.ctx.resume(); }catch(e){} }
+  return Music.ctx;
+}
+let audioUnlocked=false;
+function unlockAudio(){
+  try{ if(navigator.audioSession) navigator.audioSession.type='playback'; }catch(e){}
+  const c=getAC(); if(!c) return;
+  if(!audioUnlocked){ try{ const b=c.createBuffer(1,1,22050), s=c.createBufferSource(); s.buffer=b; s.connect(c.destination); s.start(0); audioUnlocked=true; }catch(e){} }
+}
+['pointerdown','touchend','click','keydown'].forEach(ev=>document.addEventListener(ev,unlockAudio,{capture:true,passive:true}));
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden&&Music.ctx&&Music.ctx.state!=='running'){ try{ Music.ctx.resume(); }catch(e){} } });
+
 /* ============ 背景音樂（大廳、螢幕小遊戲各一首） ============ */
-const Music={on:false,ctx:null,master:null,comp:null,timer:null,step:0,t:0,audio:null,synth:false,noise:null,track:'lobby',noFile:{}};
+var Music={on:false,ctx:null,master:null,comp:null,timer:null,step:0,t:0,audio:null,synth:false,noise:null,track:'lobby',noFile:{}};
 const TRACK_FILE={lobby:'bgm.mp3',game:'game.mp3'};
 const vol=()=>Math.max(0,Math.min(1,(S.vol==null?60:S.vol)/100));
-function applyVolume(){ if(Music.master&&Music.synth) Music.master.gain.value=vol()*.55; if(Music.audio) Music.audio.volume=vol(); }
+function setGainNow(p,v){ try{ const t=Music.ctx.currentTime; p.cancelScheduledValues(t); p.setValueAtTime(v,t); }catch(e){ p.value=v; } }
+function applyVolume(){ if(Music.master&&Music.synth) setGainNow(Music.master.gain,vol()*.55); if(Music.audio) Music.audio.volume=vol(); }
 function paintMusic(){ const b=document.getElementById('musicbtn'); if(b) b.textContent=Music.on?'音樂：開':'音樂：關'; }
 /* 大廳：溫柔的草莓王國主題 */
 const MEL=[[76,79,76,72,74,76,79,null],[72,76,81,79,76,72,74,76],[77,76,72,69,72,76,77,null],[74,77,79,77,74,71,74,null],
@@ -1256,8 +1273,7 @@ function schedule(){
   }
 }
 function startSynth(){
-  const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
-  Music.ctx=Music.ctx||new AC(); const c=Music.ctx; if(c.state==='suspended') c.resume();
+  const c=getAC(); if(!c) return;
   if(!Music.comp){
     Music.comp=c.createDynamicsCompressor(); Music.comp.connect(c.destination);
     const len=Math.floor(c.sampleRate*.2), buf=c.createBuffer(1,len,c.sampleRate), d=buf.getChannelData(0); for(let i=0;i<len;i++) d[i]=Math.random()*2-1; Music.noise=buf;
@@ -1295,7 +1311,7 @@ function startMusicPref(){ if(S.music!==false) musicStart(); }
 const G={cleanup:null};
 function sfx(f,d=.12,type='sine',v=.14,when=0){
   try{
-    const AC=window.AudioContext||window.webkitAudioContext; const a=Music.ctx||(Music.ctx=new AC()); if(a.state==='suspended') a.resume();
+    const a=getAC(); if(!a) return;
     const o=a.createOscillator(), g=a.createGain(), tt=a.currentTime+when; o.type=type; o.frequency.value=f;
     g.gain.setValueAtTime(0,tt); g.gain.linearRampToValueAtTime(Math.max(.001,v*(.4+vol())),tt+.01); g.gain.exponentialRampToValueAtTime(.001,tt+d);
     o.connect(g); g.connect(a.destination); o.start(tt); o.stop(tt+d+.03);
@@ -2542,7 +2558,7 @@ const RAID_SPOTS=[
   {x:1650,y:800,w:320,sym:'castle',vb:'0 0 300 290'}];
 /* ---- 突襲任務音效：警報、重擊、緊張任務配樂 ---- */
 const RaidSnd={g:null,timer:null,t:0,step:0,nb:null,done:false};
-function rsCtx(){ const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return null; const c=Music.ctx||(Music.ctx=new AC()); if(c.state==='suspended') c.resume(); return c; }
+function rsCtx(){ return getAC(); }
 function rsNoise(c){ if(!RaidSnd.nb){ const len=c.sampleRate, b=c.createBuffer(1,len,c.sampleRate), d=b.getChannelData(0); for(let i=0;i<len;i++) d[i]=Math.random()*2-1; RaidSnd.nb=b; } return RaidSnd.nb; }
 function rsOsc(c,out,type,f,t,dur,g,opt={}){
   const o=c.createOscillator(), a=c.createGain(); o.type=type; o.frequency.setValueAtTime(f,t);
@@ -2601,7 +2617,7 @@ function rsLoop(){
   }
 }
 function bgmDuck(on){
-  try{ if(Music.master&&Music.ctx) Music.master.gain.setTargetAtTime(on?0:vol()*.55,Music.ctx.currentTime,.15); if(Music.audio) Music.audio.volume=on?0:vol(); }catch(e){}
+  try{ if(Music.master&&Music.ctx){ const p=Music.master.gain, t=Music.ctx.currentTime; p.cancelScheduledValues(t); p.setValueAtTime(p.value,t); p.linearRampToValueAtTime(on?0:vol()*.55,t+.25); } if(Music.audio) Music.audio.volume=on?0:vol(); }catch(e){}
 }
 function rsStart(){
   const c=rsCtx(); if(!c) return; rsStop();
