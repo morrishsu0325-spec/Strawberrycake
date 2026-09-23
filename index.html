@@ -171,7 +171,7 @@ h1,h2,h3{font-family:var(--serif);font-weight:900;margin:0;line-height:1.25}
 .rd-q{position:absolute;left:50%;top:-30px;transform:translateX(-50%);font-family:var(--serif);font-weight:900;font-size:80px;color:#fff;-webkit-text-stroke:6px #C8202B;paint-order:stroke fill;opacity:0;transition:opacity .3s}
 .rd-spot.hit .rd-q{opacity:1;animation:rdQ 1.2s ease-in-out infinite}
 @keyframes rdQ{50%{transform:translateX(-50%) translateY(-16px) rotate(8deg)}}
-.rd-man{position:absolute;z-index:3;left:960px;top:600px;transform:translate(-50%,-50%) scale(0);pointer-events:none}
+.rd-man{position:absolute;z-index:3;filter:drop-shadow(0 10px 10px rgba(74,20,24,.25));left:960px;top:600px;transform:translate(-50%,-50%) scale(0);pointer-events:none}
 .rd-man svg{display:block;width:100%;height:auto}
 .rd-woosh{position:absolute;z-index:7;font-family:var(--serif);font-weight:900;font-size:64px;color:#fff;-webkit-text-stroke:5px #8E1420;paint-order:stroke fill;pointer-events:none;animation:rdWoosh 1s ease-out forwards}
 @keyframes rdWoosh{0%{opacity:0;transform:translate(-50%,-50%) scale(.4) rotate(-10deg)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.15) rotate(-6deg)}100%{opacity:0;transform:translate(-50%,-90%) scale(1) rotate(-6deg)}}
@@ -181,6 +181,10 @@ h1,h2,h3{font-family:var(--serif);font-weight:900;margin:0;line-height:1.25}
 .rd-card{position:absolute;left:50%;top:380px;width:1040px;margin-left:-520px;z-index:10;background:var(--paper,#FFF8F0);color:#4A1418;border:5px solid #C8202B;outline:2px solid #C8202B;outline-offset:-14px;border-radius:14px;padding:1.3em 2em 1.4em;text-align:center;box-shadow:0 22px 0 #8E1420,0 30px 40px rgba(74,20,24,.4);display:none;cursor:default}
 #raid.p3 .rd-card{display:block;animation:rdCard .6s cubic-bezier(.2,1.4,.4,1) both}
 @keyframes rdCard{from{opacity:0;transform:translateY(260px) rotate(-4deg) scale(.7)}}
+.rd-figs{position:absolute;top:-142px;display:flex;align-items:flex-end;gap:0;pointer-events:none}
+.rd-figs svg{width:122px;height:auto;filter:drop-shadow(0 6px 6px rgba(74,20,24,.2))}
+.rd-figs.l{left:24px}.rd-figs.r{right:24px}
+.rd-figs svg:nth-child(2){animation:rdQ 1.6s ease-in-out infinite}
 .rd-card .q{font-family:var(--serif);font-weight:900;font-size:62px;color:#C8202B;line-height:1.1}
 .rd-card .m{font-size:36px;font-weight:700;margin:.35em 0 .1em;line-height:1.45}
 .rd-card .m b{color:#fff;background:#C8202B;padding:0 .3em;border-radius:10px}
@@ -2490,6 +2494,31 @@ document.addEventListener('pointerdown',e=>{
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden) eggSchedule(); });
 
 /* ============ 突襲任務彈出視窗 ============ */
+/* 白色小人公仔（依照實體 3D 列印小人的姿勢畫的） */
+const FIG_POSES=[
+  {h:[50,22,15],L:[[[50,42],[50,84],27],[[44,86],[40,130],13],[[57,86],[62,130],13],[[36,47],[33,88],10],[[64,47],[77,65],[65,78],10]]},
+  {h:[46,50,15],L:[[[46,70],[46,106],28],[[33,74],[31,112],10],[[59,74],[61,112],10],[[53,112],[80,130],13],[[40,112],[34,129],13]]},
+  {h:[50,34,13],L:[[[50,52],[50,94],25],[[45,96],[45,131],12],[[56,96],[56,131],12],[[38,56],[22,58],[20,38],10],[[62,56],[78,58],[80,38],10]]},
+  {h:[50,40,13],L:[[[50,58],[50,98],25],[[45,100],[45,131],12],[[56,100],[56,131],12],[[39,60],[31,36],[42,20],10],[[61,60],[69,36],[58,20],10]]},
+  {h:[80,104,12],L:[[[28,84],[66,76],26],[[24,88],[20,130],13],[[33,90],[36,130],13],[[66,82],[76,128],11],[[60,84],[64,128],11]]},
+  {h:[40,24,15],L:[[[40,44],[40,90],27],[[35,92],[35,131],12],[[46,92],[47,131],12],[[28,52],[6,56],11],[[52,50],[93,46],11]]},
+  {h:[50,22,15],L:[[[50,42],[50,88],28],[[44,90],[44,131],13],[[56,90],[56,131],13],[[35,47],[32,90],10],[[65,47],[68,90],10]]}
+];
+function figSvg(k){
+  const p0=FIG_POSES[k%FIG_POSES.length], id='fg'+Math.random().toString(36).slice(2,7);
+  const p={h:p0.h,L:[[[p0.h[0],p0.h[1]],p0.L[0][0],p0.h[2]*.95]].concat(p0.L.map((l,i)=>l.slice(0,-1).concat([l[l.length-1]*(i===0?1.12:1.3)])))};
+  const path=l=>'M'+l.slice(0,-1).map(q=>q.join(' ')).join(' L');
+  const limbs=(col,dw,dx,dy)=>p.L.map(l=>`<path d="${path(l)}" transform="translate(${dx} ${dy})" stroke="${col}" stroke-width="${l[l.length-1]+dw}" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`).join('');
+  const [hx,hy,hr]=p.h;
+  return `<svg viewBox="-4 0 108 140" aria-hidden="true"><defs><radialGradient id="${id}" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".6" stop-color="#F6F1E8"/><stop offset="1" stop-color="#DCD3C4"/></radialGradient></defs>
+    <ellipse cx="50" cy="133" rx="36" ry="5" fill="rgba(74,20,24,.16)"/>
+    ${limbs('#C9BFAF',3,0,0)}<circle cx="${hx}" cy="${hy}" r="${hr+1.5}" fill="#C9BFAF"/>
+    ${limbs('#E6DED1',0,1.6,1.2)}
+    ${limbs('#FBF8F2',-2.5,-.4,-.4)}
+    <circle cx="${hx}" cy="${hy}" r="${hr}" fill="url(#${id})"/>
+    <ellipse cx="${hx-hr*.35}" cy="${hy-hr*.4}" rx="${hr*.28}" ry="${hr*.18}" fill="#fff" opacity=".8"/></svg>`;
+}
+
 const Raid={T:[],anims:[]};
 const MIN_COLS=[['#E0303B','#8E1420'],['#F6C945','#E0303B'],['#8CCB5E','#4E7A3A'],['#FF8FB0','#C8202B'],['#5BA8E8','#2D5F8F'],['#A66BD8','#5B2D86']];
 function minionSvg(c1,c2){
@@ -2511,6 +2540,85 @@ const RAID_SPOTS=[
   {x:1640,y:360,w:300,sym:'cake',vb:'0 0 200 170'},
   {x:280,y:790,w:220,sym:'berry',vb:'0 0 100 120'},
   {x:1650,y:800,w:320,sym:'castle',vb:'0 0 300 290'}];
+/* ---- 突襲任務音效：警報、重擊、緊張任務配樂 ---- */
+const RaidSnd={g:null,timer:null,t:0,step:0,nb:null,done:false};
+function rsCtx(){ const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return null; const c=Music.ctx||(Music.ctx=new AC()); if(c.state==='suspended') c.resume(); return c; }
+function rsNoise(c){ if(!RaidSnd.nb){ const len=c.sampleRate, b=c.createBuffer(1,len,c.sampleRate), d=b.getChannelData(0); for(let i=0;i<len;i++) d[i]=Math.random()*2-1; RaidSnd.nb=b; } return RaidSnd.nb; }
+function rsOsc(c,out,type,f,t,dur,g,opt={}){
+  const o=c.createOscillator(), a=c.createGain(); o.type=type; o.frequency.setValueAtTime(f,t);
+  if(opt.to) o.frequency.exponentialRampToValueAtTime(opt.to,t+(opt.glide||dur));
+  if(opt.detune) o.detune.value=opt.detune;
+  let node=o; if(opt.lp){ const fl=c.createBiquadFilter(); fl.type='lowpass'; fl.frequency.setValueAtTime(opt.lp,t); if(opt.lpTo) fl.frequency.exponentialRampToValueAtTime(opt.lpTo,t+dur); o.connect(fl); node=fl; }
+  node.connect(a); a.connect(out);
+  a.gain.setValueAtTime(0,t); a.gain.linearRampToValueAtTime(g,t+(opt.atk||.005)); a.gain.exponentialRampToValueAtTime(.0008,t+dur);
+  o.start(t); o.stop(t+dur+.05);
+}
+function rsNoiseHit(c,out,t,dur,g,type,f,fTo){
+  const s=c.createBufferSource(), fl=c.createBiquadFilter(), a=c.createGain(); s.buffer=rsNoise(c);
+  fl.type=type; fl.frequency.setValueAtTime(f,t); if(fTo) fl.frequency.exponentialRampToValueAtTime(fTo,t+dur);
+  s.connect(fl); fl.connect(a); a.connect(out);
+  a.gain.setValueAtTime(0,t); a.gain.linearRampToValueAtTime(g,t+.01); a.gain.exponentialRampToValueAtTime(.0008,t+dur);
+  s.start(t); s.stop(t+dur+.05);
+}
+function rsSiren(c,out,t,cycles){
+  [['sawtooth',0,.11],['square',8,.05]].forEach(([type,det,g])=>{
+    const o=c.createOscillator(), fl=c.createBiquadFilter(), a=c.createGain(); o.type=type; o.detune.value=det;
+    fl.type='lowpass'; fl.frequency.value=2600; o.connect(fl); fl.connect(a); a.connect(out);
+    for(let i=0;i<cycles;i++){ const s=t+i*.44; o.frequency.setValueAtTime(600,s); o.frequency.linearRampToValueAtTime(1250,s+.22); o.frequency.linearRampToValueAtTime(600,s+.44); }
+    a.gain.setValueAtTime(0,t); a.gain.linearRampToValueAtTime(g,t+.06); a.gain.setValueAtTime(g,t+cycles*.44-.15); a.gain.linearRampToValueAtTime(0,t+cycles*.44);
+    o.start(t); o.stop(t+cycles*.44+.05);
+  });
+}
+function rsImpact(c,out,t){
+  rsNoiseHit(c,out,t,.45,.55,'lowpass',1800,200);
+  rsOsc(c,out,'sine',120,t,.6,.7,{to:34});
+}
+function rsStinger(c,out,t){
+  [65.41,130.81,155.56,196,261.63].forEach((f,i)=>{ rsOsc(c,out,'sawtooth',f,t,1.3,.12,{lp:3400,lpTo:380,detune:i%2?-7:7}); });
+  rsOsc(c,out,'sine',92,t,.7,.55,{to:55});
+  rsNoiseHit(c,out,t,.25,.3,'highpass',3000);
+}
+function rsWhoosh(){ const c=rsCtx(); if(!c||!RaidSnd.g) return; rsNoiseHit(c,RaidSnd.g,c.currentTime,.45,.4,'bandpass',300,4200); }
+function rsMission(){
+  const c=rsCtx(); if(!c||!RaidSnd.g||RaidSnd.done) return; RaidSnd.done=true; const t=c.currentTime+.02, g=RaidSnd.g;
+  [587.33,739.99,880,1174.66].forEach((f,i)=>rsOsc(c,g,'square',f,t+i*.08,.22,.07,{lp:4000}));
+  [293.66,369.99,440,587.33].forEach(f=>rsOsc(c,g,'sawtooth',f,t+.34,1.2,.07,{lp:3000,lpTo:900,atk:.02}));
+  rsOsc(c,g,'sine',110,t+.34,.5,.5,{to:50});
+}
+const RS_BASS=[73.42,73.42,87.31,82.41];
+function rsLoop(){
+  const c=Music.ctx, g=RaidSnd.g; if(!c||!g) return;
+  const sd=60/150/4;
+  while(RaidSnd.t<c.currentTime+.2){
+    const t=RaidSnd.t, st=RaidSnd.step%16, bar=Math.floor(RaidSnd.step/16)%4, b=RS_BASS[bar];
+    if(st%2===0) rsOsc(c,g,'square',b*(st%4===2?2:1),t,.1,.13,{lp:900});
+    rsNoiseHit(c,g,t,.03,st%4===0?.07:.03,'highpass',8000);
+    if(st===0||st===8) rsOsc(c,g,'sine',130,t,.18,.5,{to:42});
+    if(st===4||st===12) rsNoiseHit(c,g,t,.12,.18,'bandpass',1800);
+    if(bar%2===1&&(st===0||st===3||st===6)) rsOsc(c,g,'square',[587.33,698.46,880][st/3],t,.16,.045,{lp:3500});
+    if(bar===3&&st===12) rsOsc(c,g,'square',1046.5,t,.3,.04,{lp:3500});
+    RaidSnd.t+=sd; RaidSnd.step++;
+  }
+}
+function bgmDuck(on){
+  try{ if(Music.master&&Music.ctx) Music.master.gain.setTargetAtTime(on?0:vol()*.55,Music.ctx.currentTime,.15); if(Music.audio) Music.audio.volume=on?0:vol(); }catch(e){}
+}
+function rsStart(){
+  const c=rsCtx(); if(!c) return; rsStop();
+  const g=c.createGain(), comp=c.createDynamicsCompressor(); g.gain.value=.25+vol()*.9; g.connect(comp); comp.connect(c.destination);
+  RaidSnd.g=g; RaidSnd.done=false; bgmDuck(true);
+  const t=c.currentTime+.03;
+  rsImpact(c,g,t);
+  [0,.12,.24].forEach(d=>rsOsc(c,g,'square',1568,t+d,.08,.08));
+  rsSiren(c,g,t+.05,4);
+  rsStinger(c,g,t+.52);
+  RaidSnd.t=t+1.3; RaidSnd.step=0; clearInterval(RaidSnd.timer); RaidSnd.timer=setInterval(rsLoop,50);
+}
+function rsStop(){
+  clearInterval(RaidSnd.timer); RaidSnd.timer=null;
+  const g=RaidSnd.g; if(g&&Music.ctx){ try{ g.gain.setTargetAtTime(0,Music.ctx.currentTime,.08); }catch(e){} setTimeout(()=>{ try{ g.disconnect(); }catch(e){} },600); }
+  RaidSnd.g=null;
+}
 function raidLater(f,ms){ Raid.T.push(setTimeout(f,ms)); }
 function raidOpen(){
   const el=document.getElementById('raid'), h=S.hunt, total=Math.max(1,h.big+h.small), mins=+h.mins||6;
@@ -2521,10 +2629,10 @@ function raidOpen(){
   el.innerHTML=`<div class="rd-rays"></div><div class="rd-flash"></div>
     <div class="rd-tape t"><span>${tapeTxt}</span></div><div class="rd-tape b"><span>${tapeTxt}</span></div>
     ${RAID_SPOTS.map((s,k)=>`<div class="rd-spot" id="rdSpot${k}" style="left:${s.x}px;top:${s.y}px;width:${s.w}px"><svg viewBox="${s.vb}"><use href="#${s.sym}"/></svg><div class="rd-q">？</div></div>`).join('')}
-    ${men.map((m,k)=>`<div class="rd-man" id="rdMan${k}" style="width:${m.big?200:140}px">${minionSvg(m.col[0],m.col[1])}</div>`).join('')}
+    ${men.map((m,k)=>`<div class="rd-man" id="rdMan${k}" style="width:${m.big?200:140}px">${figSvg(k)}</div>`).join('')}
     <div class="rd-hero"><div class="rd-bang">！</div><div class="rd-title">突襲任務！</div><div class="rd-sub">SURPRISE MISSION</div></div>
     <div class="rd-cap">咦？！小人們趁大家不注意，全部逃跑啦！</div>
-    <div class="rd-card" id="rdCard">
+    <div class="rd-card" id="rdCard"><div class="rd-figs l">${figSvg(2)}${figSvg(1)}</div><div class="rd-figs r">${figSvg(0)}${figSvg(3)}</div>
       <div class="q">你有發現嗎？</div>
       <div class="m">剛剛其實已經有 <b>${total} 隻小人</b> 藏在草莓王國的各地囉！</div>
       <div class="go2">趕緊開始找，計時 ${mins} 分鐘現在開始！！</div>
@@ -2532,10 +2640,9 @@ function raidOpen(){
       <div class="rd-btns"><button class="s" data-rd="start">開始計時！GO</button><button class="l" data-rd="close">先看規則</button></div>
     </div>
     <div class="rd-skip">點畫面可以跳過動畫 ▶</div>`;
-  if(matchMedia('(prefers-reduced-motion:reduce)').matches){ el.classList.add('p2','p3'); return; }
-  [880,660,880,660,880,660].forEach((f,i)=>sfx(f,.15,'square',.07,i*.17));
+  rsStart();
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches){ el.classList.add('p2','p3'); rsMission(); return; }
   raidLater(()=>el.classList.remove('shake'),600);
-  raidLater(()=>{ sfx(90,.35,'sine',.35); sfx(140,.25,'triangle',.2,.02); },520);
   // 小人從中間冒出來
   raidLater(()=>{
     el.classList.add('p2'); sfx(1400,.08,'triangle',.14); sfx(1760,.1,'triangle',.12,.06);
@@ -2554,7 +2661,7 @@ function raidOpen(){
   raidLater(()=>el.classList.add('p2b'),1500);
   // 瞬間四散躲起來
   raidLater(()=>{
-    [1300,1000,760,560].forEach((f,i)=>sfx(f,.09,'triangle',.1,i*.05));
+    rsWhoosh();
     men.forEach((m,k)=>{
       const e=document.getElementById('rdMan'+k), sp=RAID_SPOTS[m.spot], a=(k/men.length)*Math.PI*2+.4;
       const ox=Math.cos(a)*130, oy=Math.sin(a)*60, dx=sp.x-960, dy=sp.y-600+20;
@@ -2568,17 +2675,17 @@ function raidOpen(){
       raidLater(()=>{ const s=document.getElementById('rdSpot'+m.spot); if(s){ s.classList.remove('hit'); void s.offsetWidth; s.classList.add('hit'); } sfx(520,.08,'square',.06); },k*90+560);
     });
   },2500);
-  raidLater(()=>{ el.classList.add('p3'); sfx(784,.2,'triangle',.18); sfx(1047,.3,'triangle',.18,.15); },3900);
+  raidLater(()=>{ el.classList.add('p3'); rsMission(); },3900);
 }
 function raidSkip(){
   const el=document.getElementById('raid'); if(!el.classList.contains('on')||el.classList.contains('p3')) return;
   Raid.T.forEach(clearTimeout); Raid.T=[]; Raid.anims.forEach(a=>{ try{ a.finish(); }catch(e){} });
-  el.classList.remove('shake'); el.classList.add('p2','p3');
+  el.classList.remove('shake'); el.classList.add('p2','p3'); rsMission();
   const h=S.hunt, total=h.big+h.small;
   for(let k=0;k<total;k++){ const e=document.getElementById('rdMan'+k); if(e) e.style.display='none'; }
   RAID_SPOTS.forEach((s,k)=>{ const sp=document.getElementById('rdSpot'+k); if(sp&&k<total) sp.classList.add('hit'); });
 }
-function raidClose(){ const el=document.getElementById('raid'); Raid.T.forEach(clearTimeout); Raid.T=[]; el.className=''; el.innerHTML=''; }
+function raidClose(){ rsStop(); bgmDuck(false); const el=document.getElementById('raid'); Raid.T.forEach(clearTimeout); Raid.T=[]; el.className=''; el.innerHTML=''; }
 function huntStart(){
   if(view!=='hunt') go('hunt');
   if(!T.run&&T.left>0){ toggleTimer(); burst(120); cheerSfx(); if(eggOn()) setTimeout(()=>eggGirl('run',true),300); }
