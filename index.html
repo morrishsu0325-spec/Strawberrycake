@@ -138,6 +138,63 @@ h1,h2,h3{font-family:var(--serif);font-weight:900;margin:0;line-height:1.25}
 .clock.low{animation:blink 1s steps(2) infinite;color:#FFE27A}
 .clock.end{color:#FFE27A}
 .hunt .clock{font-size:84px;margin:0 0 .1em}
+/* 突襲任務彈出視窗 */
+#raid{position:absolute;inset:0;z-index:42;display:none;overflow:hidden;background:radial-gradient(circle at 50% 48%,#FFF1E8 0%,#FFC6CF 42%,#E0303B 100%);cursor:pointer}
+#raid.on{display:block}
+#raid.shake{animation:rdShake .55s}
+@keyframes rdShake{10%,50%,90%{transform:translate(-14px,6px)}30%,70%{transform:translate(14px,-6px)}}
+.rd-rays{position:absolute;left:50%;top:48%;width:3000px;height:3000px;margin:-1500px 0 0 -1500px;background:repeating-conic-gradient(rgba(255,255,255,.38) 0 7deg,transparent 7deg 15deg);animation:rdSpin 40s linear infinite;pointer-events:none}
+@keyframes rdSpin{to{transform:rotate(360deg)}}
+.rd-flash{position:absolute;inset:0;background:#fff;z-index:20;pointer-events:none;animation:rdFlash .6s ease-out forwards}
+@keyframes rdFlash{from{opacity:1}to{opacity:0}}
+.rd-tape{position:absolute;left:-8%;width:116%;height:78px;background:#C8202B;color:#fff;border-top:14px solid #F6C945;border-bottom:14px solid #F6C945;border-image:repeating-linear-gradient(45deg,#F6C945 0 22px,#2b1013 22px 44px) 14;overflow:hidden;display:flex;align-items:center;z-index:6;box-shadow:0 8px 18px rgba(74,20,24,.35)}
+.rd-tape span{white-space:nowrap;font-family:var(--serif);font-weight:900;font-size:40px;letter-spacing:.08em;animation:rdMarq 14s linear infinite}
+.rd-tape.b span{animation-direction:reverse}
+@keyframes rdMarq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.rd-tape.t{top:26px;transform:rotate(-2.5deg);animation:rdTapeL .5s cubic-bezier(.2,1.3,.4,1) both}
+.rd-tape.b{bottom:22px;transform:rotate(2.5deg);animation:rdTapeR .5s .1s cubic-bezier(.2,1.3,.4,1) both}
+@keyframes rdTapeL{from{transform:translateX(-110%) rotate(-2.5deg)}}
+@keyframes rdTapeR{from{transform:translateX(110%) rotate(2.5deg)}}
+.rd-hero{position:absolute;left:0;right:0;top:170px;text-align:center;z-index:8;transition:transform .7s cubic-bezier(.3,1.3,.5,1);pointer-events:none}
+#raid.p2 .rd-hero{transform:translateY(-110px) scale(.5)}
+.rd-hero{transform-origin:50% 0}
+.rd-bang{width:300px;height:300px;margin:0 auto;border-radius:50%;background:#C8202B;border:16px solid #fff;box-shadow:0 0 0 12px #C8202B,0 18px 30px rgba(74,20,24,.4);display:grid;place-items:center;color:#fff;font-family:var(--serif);font-weight:900;font-size:230px;line-height:1;animation:rdPop .6s cubic-bezier(.2,1.7,.4,1) both,rdPulse 1s .7s ease-in-out infinite}
+@keyframes rdPop{from{transform:scale(0) rotate(-30deg)}}
+@keyframes rdPulse{50%{transform:scale(1.08) rotate(4deg)}}
+.rd-title{margin-top:.15em;font-family:var(--serif);font-weight:900;font-size:170px;line-height:1;color:#fff;-webkit-text-stroke:14px #8E1420;paint-order:stroke fill;text-shadow:0 12px 0 #4A1418;letter-spacing:.04em;animation:rdStamp .5s .5s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes rdStamp{from{opacity:0;transform:scale(3) rotate(-10deg)}}
+.rd-sub{font-family:var(--display);font-size:64px;color:#F6C945;-webkit-text-stroke:5px #4A1418;paint-order:stroke fill;letter-spacing:.12em;animation:rdStamp .45s .8s both}
+.rd-spot{position:absolute;z-index:4;transform:translate(-50%,-50%);pointer-events:none}
+.rd-spot svg{display:block;width:100%;height:auto;filter:drop-shadow(0 10px 10px rgba(74,20,24,.3))}
+.rd-spot.hit{animation:rdWob .6s}
+@keyframes rdWob{20%{transform:translate(-50%,-50%) rotate(-7deg) scale(1.06)}45%{transform:translate(-50%,-50%) rotate(6deg)}70%{transform:translate(-50%,-50%) rotate(-3deg)}}
+.rd-q{position:absolute;left:50%;top:-30px;transform:translateX(-50%);font-family:var(--serif);font-weight:900;font-size:80px;color:#fff;-webkit-text-stroke:6px #C8202B;paint-order:stroke fill;opacity:0;transition:opacity .3s}
+.rd-spot.hit .rd-q{opacity:1;animation:rdQ 1.2s ease-in-out infinite}
+@keyframes rdQ{50%{transform:translateX(-50%) translateY(-16px) rotate(8deg)}}
+.rd-man{position:absolute;z-index:3;left:960px;top:600px;transform:translate(-50%,-50%) scale(0);pointer-events:none}
+.rd-man svg{display:block;width:100%;height:auto}
+.rd-woosh{position:absolute;z-index:7;font-family:var(--serif);font-weight:900;font-size:64px;color:#fff;-webkit-text-stroke:5px #8E1420;paint-order:stroke fill;pointer-events:none;animation:rdWoosh 1s ease-out forwards}
+@keyframes rdWoosh{0%{opacity:0;transform:translate(-50%,-50%) scale(.4) rotate(-10deg)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.15) rotate(-6deg)}100%{opacity:0;transform:translate(-50%,-90%) scale(1) rotate(-6deg)}}
+.rd-cap{position:absolute;left:0;right:0;top:360px;text-align:center;z-index:8;font-family:var(--serif);font-weight:900;font-size:58px;color:#4A1418;opacity:0;transform:translateY(20px);transition:.4s;pointer-events:none;text-shadow:0 3px 0 #fff,0 -3px 0 #fff,3px 0 0 #fff,-3px 0 0 #fff}
+#raid.p2b .rd-cap{opacity:1;transform:none}
+#raid.p3 .rd-cap{opacity:0}
+.rd-card{position:absolute;left:50%;top:380px;width:1040px;margin-left:-520px;z-index:10;background:var(--paper,#FFF8F0);color:#4A1418;border:5px solid #C8202B;outline:2px solid #C8202B;outline-offset:-14px;border-radius:14px;padding:1.3em 2em 1.4em;text-align:center;box-shadow:0 22px 0 #8E1420,0 30px 40px rgba(74,20,24,.4);display:none;cursor:default}
+#raid.p3 .rd-card{display:block;animation:rdCard .6s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes rdCard{from{opacity:0;transform:translateY(260px) rotate(-4deg) scale(.7)}}
+.rd-card .q{font-family:var(--serif);font-weight:900;font-size:62px;color:#C8202B;line-height:1.1}
+.rd-card .m{font-size:36px;font-weight:700;margin:.35em 0 .1em;line-height:1.45}
+.rd-card .m b{color:#fff;background:#C8202B;padding:0 .3em;border-radius:10px}
+.rd-card .go2{display:inline-block;margin:.25em 0 .1em;font-family:var(--serif);font-weight:900;font-size:50px;color:#fff;background:#E0303B;padding:.08em .6em;border-radius:14px;transform:rotate(-2deg);box-shadow:0 6px 0 #8E1420;animation:rdPulse 1.1s ease-in-out infinite}
+.rd-chips{display:flex;justify-content:center;gap:.6em;margin:.7em 0 .9em;flex-wrap:wrap}
+.rd-chips span{background:#FCE9EB;border:3px solid #C8202B;border-radius:99px;padding:.15em .9em;font-weight:900;font-size:28px}
+.rd-chips span i{font-style:normal;color:#C8202B;font-family:var(--serif);font-size:1.15em}
+.rd-btns{display:flex;justify-content:center;gap:.8em}
+.rd-btns button{font-family:var(--serif);font-weight:900;font-size:40px;border-radius:99px;padding:.25em 1.3em;cursor:pointer}
+.rd-btns .s{background:#C8202B;color:#fff;border:0;box-shadow:0 7px 0 #8E1420}
+.rd-btns .l{background:#fff;color:#C8202B;border:4px solid #C8202B}
+.rd-skip{position:absolute;right:30px;bottom:130px;z-index:9;color:#fff;font-weight:700;font-size:24px;opacity:.85;pointer-events:none}
+#raid.p3 .rd-skip{display:none}
+
 .hunt .panel{padding:.8em 1.3em}
 .hunt .sep{margin:.4em 0}
 .hunt .recipe{padding:.9em 1.4em}
@@ -480,6 +537,7 @@ body.in-intro #musicbtn{margin-left:auto}
 <main id="view"></main>
 <div id="game" class="game"></div>
 <div id="picker" class="game"></div>
+<div id="raid"></div>
 <div id="celeb" class="celeb"></div>
 <div id="eggs"></div>
 </div>
@@ -850,7 +908,7 @@ function vHunt(){
       <hr class="sep">
       <div>大 ${h.bigFound} 隻 × ${h.bigRate}、小 ${h.smallFound} 隻 × ${h.smallRate}${all?`、全找到 +${h.bonus}`:''}</div>
       <div class="earned">${raw} 甯甯幣</div>
-      <div class="row"><button class="pb" data-act="huntsettle" aria-pressed="${h.settled}">${h.settled?'已結算，點此取消':'結算並發幣'}</button></div>
+      <div class="row"><button class="pb ghost" data-act="raid">重播突襲</button><button class="pb" data-act="huntsettle" aria-pressed="${h.settled}">${h.settled?'已結算，點此取消':'結算並發幣'}</button></div>
     </div></div></div>`;
 }
 let arcadeSel={};
@@ -973,7 +1031,8 @@ function go(v){
   const n=isNaN(+v)?v:+v;
   if(n===view) return;
   view=n; if(n==='intro') introStep=0; stopTimer(); loadTimer(); render(); document.getElementById('view').scrollTop=0;
-  if(eggOn()&&Math.random()<.15) setTimeout(()=>eggGirl(),1600);
+  if(n==='hunt'&&!S.hunt.settled) raidOpen();
+  else if(eggOn()&&Math.random()<.15) setTimeout(()=>eggGirl(),1600);
 }
 
 /* ============ 計時器 ============ */
@@ -1019,6 +1078,7 @@ document.addEventListener('click',e=>{
   else if(act==='hunt'){ const k=a.dataset.k, max=k==='bigFound'?S.hunt.big:S.hunt.small, before=S.hunt[k]; S.hunt[k]=Math.max(0,Math.min(max,S.hunt[k]+ +a.dataset.d)); S.hunt.settled=false; save(); render();
     if(S.hunt[k]>before){ burst(50); sfx(988,.15,'triangle',.16); sfx(1319,.2,'triangle',.14,.08);
       if(S.hunt.bigFound>=S.hunt.big&&S.hunt.smallFound>=S.hunt.small){ stopTimer(); paintClock(); setTimeout(()=>celebrate('全部找到了！加碼 +'+S.hunt.bonus+' 甯甯幣',6000),300); } } }
+  else if(act==='raid') raidOpen();
   else if(act==='huntsettle'){ S.hunt.settled=!S.hunt.settled; if(S.hunt.settled){ stopTimer(); burst(100); if(eggOn()) setTimeout(()=>eggGirl('cheer',true),400); } save(); render(); }
   else if(act==='fs') toggleFS();
   else if(act==='eggtoggle'){ S.eggs.on=!S.eggs.on; save(); render(); eggSchedule(); }
@@ -2428,6 +2488,106 @@ document.addEventListener('pointerdown',e=>{
   if(Egg.taps.length>=6){ Egg.taps=[]; rainDown(90,['🍓','🍓','🍑','💖']); giggle(); eggGirl('drop',true); }
 });
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden) eggSchedule(); });
+
+/* ============ 突襲任務彈出視窗 ============ */
+const Raid={T:[],anims:[]};
+const MIN_COLS=[['#E0303B','#8E1420'],['#F6C945','#E0303B'],['#8CCB5E','#4E7A3A'],['#FF8FB0','#C8202B'],['#5BA8E8','#2D5F8F'],['#A66BD8','#5B2D86']];
+function minionSvg(c1,c2){
+  return `<svg viewBox="0 0 100 132" aria-hidden="true"><ellipse cx="50" cy="127" rx="30" ry="4.5" fill="rgba(74,20,24,.18)"/>
+  <path d="M50 60c-20 0-30 14-31 36-1 16 2 26 9 28h44c7-2 10-12 9-28-1-22-11-36-31-36z" fill="${c1}" stroke="#4A1418" stroke-width="3.5" stroke-linejoin="round"/>
+  <g fill="#fff" opacity=".75"><circle cx="38" cy="90" r="3"/><circle cx="60" cy="82" r="3"/><circle cx="52" cy="104" r="3"/><circle cx="66" cy="102" r="2.5"/><circle cx="33" cy="108" r="2.5"/></g>
+  <ellipse cx="18" cy="90" rx="7" ry="10" fill="${c1}" stroke="#4A1418" stroke-width="3" transform="rotate(30 18 90)"/>
+  <ellipse cx="82" cy="90" rx="7" ry="10" fill="${c1}" stroke="#4A1418" stroke-width="3" transform="rotate(-30 82 90)"/>
+  <circle cx="50" cy="40" r="29" fill="#FFF7F0" stroke="#4A1418" stroke-width="3.5"/>
+  <path d="M22 36c2-16 14-26 28-26s26 10 28 26c-8-6-18-9-28-9s-20 3-28 9z" fill="${c2}" stroke="#4A1418" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M50 11c-1-6 2-10 7-11" stroke="#4E7A3A" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <circle cx="40" cy="45" r="3.8" fill="#4A1418"/><circle cx="60" cy="45" r="3.8" fill="#4A1418"/>
+  <circle cx="41.3" cy="43.6" r="1.2" fill="#fff"/><circle cx="61.3" cy="43.6" r="1.2" fill="#fff"/>
+  <ellipse cx="32" cy="53" rx="5.5" ry="3.2" fill="#FF9AA8" opacity=".85"/><ellipse cx="68" cy="53" rx="5.5" ry="3.2" fill="#FF9AA8" opacity=".85"/>
+  <path d="M44 54q6 6 12 0" fill="none" stroke="#4A1418" stroke-width="2.8" stroke-linecap="round"/></svg>`;
+}
+const RAID_SPOTS=[
+  {x:300,y:330,w:380,sym:'cloud',vb:'0 0 200 90'},
+  {x:1640,y:360,w:300,sym:'cake',vb:'0 0 200 170'},
+  {x:280,y:790,w:220,sym:'berry',vb:'0 0 100 120'},
+  {x:1650,y:800,w:320,sym:'castle',vb:'0 0 300 290'}];
+function raidLater(f,ms){ Raid.T.push(setTimeout(f,ms)); }
+function raidOpen(){
+  const el=document.getElementById('raid'), h=S.hunt, total=Math.max(1,h.big+h.small), mins=+h.mins||6;
+  Raid.T.forEach(clearTimeout); Raid.T=[]; Raid.anims=[];
+  const tapeTxt=('突襲任務 ★ SURPRISE MISSION ★ 小人逃跑了 ★ ').repeat(8);
+  const men=[]; for(let k=0;k<total;k++) men.push({big:k<h.big,col:MIN_COLS[k%MIN_COLS.length],spot:k%4});
+  el.className='on shake';
+  el.innerHTML=`<div class="rd-rays"></div><div class="rd-flash"></div>
+    <div class="rd-tape t"><span>${tapeTxt}</span></div><div class="rd-tape b"><span>${tapeTxt}</span></div>
+    ${RAID_SPOTS.map((s,k)=>`<div class="rd-spot" id="rdSpot${k}" style="left:${s.x}px;top:${s.y}px;width:${s.w}px"><svg viewBox="${s.vb}"><use href="#${s.sym}"/></svg><div class="rd-q">？</div></div>`).join('')}
+    ${men.map((m,k)=>`<div class="rd-man" id="rdMan${k}" style="width:${m.big?200:140}px">${minionSvg(m.col[0],m.col[1])}</div>`).join('')}
+    <div class="rd-hero"><div class="rd-bang">！</div><div class="rd-title">突襲任務！</div><div class="rd-sub">SURPRISE MISSION</div></div>
+    <div class="rd-cap">咦？！小人們趁大家不注意，全部逃跑啦！</div>
+    <div class="rd-card" id="rdCard">
+      <div class="q">你有發現嗎？</div>
+      <div class="m">剛剛其實已經有 <b>${total} 隻小人</b> 藏在草莓王國的各地囉！</div>
+      <div class="go2">趕緊開始找，計時 ${mins} 分鐘現在開始！！</div>
+      <div class="rd-chips"><span>找到大隻 <i>+${h.bigRate}</i></span><span>找到小隻 <i>+${h.smallRate}</i></span><span>${total} 隻全找到 再加碼 <i>+${h.bonus}</i></span></div>
+      <div class="rd-btns"><button class="s" data-rd="start">開始計時！GO</button><button class="l" data-rd="close">先看規則</button></div>
+    </div>
+    <div class="rd-skip">點畫面可以跳過動畫 ▶</div>`;
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches){ el.classList.add('p2','p3'); return; }
+  [880,660,880,660,880,660].forEach((f,i)=>sfx(f,.15,'square',.07,i*.17));
+  raidLater(()=>el.classList.remove('shake'),600);
+  raidLater(()=>{ sfx(90,.35,'sine',.35); sfx(140,.25,'triangle',.2,.02); },520);
+  // 小人從中間冒出來
+  raidLater(()=>{
+    el.classList.add('p2'); sfx(1400,.08,'triangle',.14); sfx(1760,.1,'triangle',.12,.06);
+    const st=document.getElementById('stage').getBoundingClientRect(), s=st.width/1920;
+    burstAt(st.left+960*s,st.top+620*s,60,['🍓','✨','💨']);
+    men.forEach((m,k)=>{
+      const e=document.getElementById('rdMan'+k), a=(k/men.length)*Math.PI*2+.4, ox=Math.cos(a)*130, oy=Math.sin(a)*60;
+      Raid.anims.push(e.animate([
+        {transform:'translate(-50%,-50%) scale(0) rotate(0)'},
+        {transform:`translate(calc(-50% + ${ox}px),calc(-50% + ${oy-80}px)) scale(1.2) rotate(${k%2?10:-10}deg)`,offset:.35},
+        {transform:`translate(calc(-50% + ${ox}px),calc(-50% + ${oy}px)) scale(1) rotate(0)`,offset:.55},
+        {transform:`translate(calc(-50% + ${ox}px),calc(-50% + ${oy-24}px)) scale(1) rotate(${k%2?-8:8}deg)`,offset:.75},
+        {transform:`translate(calc(-50% + ${ox}px),calc(-50% + ${oy}px)) scale(1) rotate(0)`}],{duration:750,delay:k*70,fill:'forwards',easing:'ease-out'}));
+    });
+  },1300);
+  raidLater(()=>el.classList.add('p2b'),1500);
+  // 瞬間四散躲起來
+  raidLater(()=>{
+    [1300,1000,760,560].forEach((f,i)=>sfx(f,.09,'triangle',.1,i*.05));
+    men.forEach((m,k)=>{
+      const e=document.getElementById('rdMan'+k), sp=RAID_SPOTS[m.spot], a=(k/men.length)*Math.PI*2+.4;
+      const ox=Math.cos(a)*130, oy=Math.sin(a)*60, dx=sp.x-960, dy=sp.y-600+20;
+      Raid.anims.push(e.animate([
+        {transform:`translate(calc(-50% + ${ox}px),calc(-50% + ${oy}px)) scale(1) rotate(0)`},
+        {transform:`translate(calc(-50% + ${(ox+dx)*.55}px),calc(-50% + ${(oy+dy)*.55-90}px)) scale(.95) rotate(${dx<0?-20:20}deg)`,offset:.45},
+        {transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy-40}px)) scale(.8) rotate(0)`,offset:.75,opacity:1},
+        {transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy+30}px)) scale(.55) rotate(0)`,opacity:0}],{duration:620,delay:k*90,fill:'forwards',easing:'cubic-bezier(.5,0,.4,1)'}));
+      raidLater(()=>{ const w=document.createElement('div'); w.className='rd-woosh'; w.textContent=pick(['咻！','躲！','溜～']);
+        w.style.left=(960+ox*1.4)+'px'; w.style.top=(600+oy*1.4)+'px'; el.appendChild(w); setTimeout(()=>w.remove(),1100); },k*90+40);
+      raidLater(()=>{ const s=document.getElementById('rdSpot'+m.spot); if(s){ s.classList.remove('hit'); void s.offsetWidth; s.classList.add('hit'); } sfx(520,.08,'square',.06); },k*90+560);
+    });
+  },2500);
+  raidLater(()=>{ el.classList.add('p3'); sfx(784,.2,'triangle',.18); sfx(1047,.3,'triangle',.18,.15); },3900);
+}
+function raidSkip(){
+  const el=document.getElementById('raid'); if(!el.classList.contains('on')||el.classList.contains('p3')) return;
+  Raid.T.forEach(clearTimeout); Raid.T=[]; Raid.anims.forEach(a=>{ try{ a.finish(); }catch(e){} });
+  el.classList.remove('shake'); el.classList.add('p2','p3');
+  const h=S.hunt, total=h.big+h.small;
+  for(let k=0;k<total;k++){ const e=document.getElementById('rdMan'+k); if(e) e.style.display='none'; }
+  RAID_SPOTS.forEach((s,k)=>{ const sp=document.getElementById('rdSpot'+k); if(sp&&k<total) sp.classList.add('hit'); });
+}
+function raidClose(){ const el=document.getElementById('raid'); Raid.T.forEach(clearTimeout); Raid.T=[]; el.className=''; el.innerHTML=''; }
+function huntStart(){
+  if(view!=='hunt') go('hunt');
+  if(!T.run&&T.left>0){ toggleTimer(); burst(120); cheerSfx(); if(eggOn()) setTimeout(()=>eggGirl('run',true),300); }
+}
+document.getElementById('raid').addEventListener('click',e=>{
+  const b=e.target.closest('[data-rd]');
+  if(b){ e.stopPropagation(); raidClose(); if(b.dataset.rd==='start') huntStart(); return; }
+  if(!e.target.closest('.rd-card')) raidSkip();
+});
 
 function fitStage(){
   const st=document.getElementById('stage'), s=Math.min(innerWidth/1920,innerHeight/1080);
