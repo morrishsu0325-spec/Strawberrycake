@@ -138,6 +138,32 @@ h1,h2,h3{font-family:var(--serif);font-weight:900;margin:0;line-height:1.25}
 .clock.low{animation:blink 1s steps(2) infinite;color:#FFE27A}
 .clock.end{color:#FFE27A}
 .hunt .clock{font-size:84px;margin:0 0 .1em}
+#tpill{position:absolute;left:18px;top:86px;z-index:30;display:none;gap:8px}
+#tpill button{background:#C8202B;color:#fff;border:3px solid #fff;border-radius:99px;font-weight:900;font-size:22px;padding:.15em .8em;box-shadow:0 4px 10px rgba(43,16,19,.35);animation:gvBlink 2s ease-in-out infinite}
+#tpill b{font-family:var(--serif);font-variant-numeric:tabular-nums}
+#timeup{position:absolute;inset:0;z-index:46;background:rgba(43,16,19,.55);display:grid;place-items:center;cursor:pointer;animation:fadein .3s}
+.tu-card{background:#FFF8F0;border:8px solid #C8202B;border-radius:30px;padding:1em 2.4em 1.2em;text-align:center;box-shadow:0 18px 0 #8E1420;animation:rdCard .6s cubic-bezier(.2,1.4,.4,1) both}
+.tu-ic{font-size:130px;line-height:1;animation:tuRing .25s ease-in-out infinite alternate}
+@keyframes tuRing{from{transform:rotate(-14deg)}to{transform:rotate(14deg)}}
+.tu-t{font-family:var(--serif);font-weight:900;font-size:120px;color:#C8202B;line-height:1.1}
+.tu-s{font-size:38px;font-weight:700;color:#4A1418;margin:.2em 0 .6em;line-height:1.5}
+.tu-b{font-family:var(--serif);font-weight:900;font-size:40px;background:#C8202B;color:#fff;border:0;border-radius:99px;padding:.15em 1.4em;box-shadow:0 6px 0 #8E1420}
+.l1 .clock{font-size:84px;margin:0 0 .1em}
+.l1 .panel{padding:1em 1.3em}
+.l1 .recipe{font-size:1em;padding:.9em 1.5em}
+.l1 .panel{display:grid;grid-template-columns:1fr 1fr;column-gap:.4em}
+.l1 .panel>*{grid-column:1/-1}
+.l1 .panel>:nth-child(4){grid-column:1;grid-row:4;font-size:.8em}
+.l1 .panel>:nth-child(5){grid-column:1;grid-row:5}
+.l1 .panel>:nth-child(6){grid-column:2;grid-row:4;font-size:.8em}
+.l1 .panel>:nth-child(7){grid-column:2;grid-row:5}
+.l1 .stepper{gap:.3em}
+.l1 .stepper button{width:1.9em;height:1.9em}
+.l1 .stepper output{font-size:1.6em;min-width:2em}
+.l1 .sep{margin:.4em 0}
+.l1 .team{display:none}
+.l1 .say{margin-top:.6em}
+.l1 .recipe h3{margin:.6em 0 .3em}
 /* 賓客任務前導影片 */
 #guest{position:absolute;inset:0;z-index:43;display:none;background:#2b1013;overflow:hidden;cursor:pointer;color:#4A1418}
 #guest.on{display:block}
@@ -601,6 +627,7 @@ body.in-intro #musicbtn{margin-left:auto}
 <main id="view"></main>
 <div id="game" class="game"></div>
 <div id="picker" class="game"></div>
+<div id="tpill"></div>
 <div id="raid"></div>
 <div id="guest"></div>
 <div id="celeb" class="celeb"></div>
@@ -612,8 +639,8 @@ body.in-intro #musicbtn{margin-left:auto}
 /* ============ 資料 ============ */
 const LEVELS = {
   1:{name:'莓語森林',short:'尋小人',sub:'尋找藏在家裡的 20 隻小人',
-    items:['20 隻白色小人（11 大、9 小）','壓克力顏料與畫筆','任務卡','草莓、桃子等水果'],
-    rules:['下午由 Naomi 和 3 位朋友一起把小人彩繪好，再藏到家裡各個角落。','晚上賓客入場，一起尋找小人。','找到小人的人抽一張任務卡，完成小互動後兌換獎品。','活動結束時還沒被找到的小人，由 Naomi 換成甯甯幣。'],
+    items:['20 隻白色小人（11 大、9 小）','壓克力顏料與畫筆','賓客小獎品'],
+    rules:['下午由 Naomi 和 3 位朋友一起把小人彩繪好，再藏到家裡各個角落。','晚上先播放「尋小人（賓客任務）」影片，按「任務開始」計時 10 分鐘。','找到小人的賓客，把小人拿給草莓王國公主 Naomi，就可以兌換小獎品（小隻的獎品更好）。','時間到還沒被找到的小人，由 Naomi 換成甯甯幣。'],
     pass:'活動結束後，把沒被找到的小人數量輸入右側，就能換算成甯甯幣。',perfect:'小隻比較好藏，沒被找到每隻 50 枚；大隻很容易被找到，藏得好沒被找到每隻 100 枚。金額可在設定調整。',
     say:'「20 隻小人躲進了莓語森林，看看今晚誰是最強獵人！」'},
 };
@@ -632,7 +659,7 @@ const ARCADE = {
 
 const DEF = {
   players:['Naomi','朋友 A','朋友 B','朋友 C'],
-  l1:{big:11,small:9,bigFound:0,smallFound:0,bigRate:100,smallRate:50,settled:false},
+  l1:{big:11,small:9,bigFound:0,smallFound:0,bigRate:100,smallRate:50,mins:10,settled:false},
   arcade:{coins:0,best:{flip:0,catch:0,code:0,match:0,ninja:0,reaction:0,numtap:0,hockey:0,garden:0},playerScores:{}},
   order:{},bought:{},
   hunt:{big:2,small:2,bigFound:0,smallFound:0,bigRate:50,smallRate:100,bonus:100,mins:6,settled:false},
@@ -939,7 +966,7 @@ function vLevel(i){
       <div class="team">本關隊員：${S.players.map(esc).join('、')}</div></div>
     </div>`;
   const l=S.l1, ub=l.big-l.bigFound, us=l.small-l.smallFound;
-  const panel=`<div class="panel">
+  const panel=`<div class="panel">${timerBlock()}
       <span class="lab">大隻小人，已找到</span>
       <div class="stepper"><button data-act="l1" data-k="bigFound" data-d="-1" aria-label="減一">−</button><output>${l.bigFound}<small> / ${l.big}</small></output><button data-act="l1" data-k="bigFound" data-d="1" aria-label="加一">＋</button></div>
       <span class="lab">小隻小人（稀有），已找到</span>
@@ -951,7 +978,7 @@ function vLevel(i){
     </div>`;
   const next=`<button class="pb" style="background:var(--red);color:#fff" data-go="arcade">前往遊戲大廳</button>`;
   return `<div class="lvhead">${numBadge(i)}<div><h2>${L.name}</h2><div class="sub">${L.sub}</div></div><button class="go" data-act="guestvid" style="margin-left:auto;white-space:nowrap">▶ 尋小人（賓客任務）</button></div>
-    <div class="cols">${recipe}<div>${panel}<div class="row" style="justify-content:flex-end;margin-top:1em">${next}</div></div></div>`;
+    <div class="cols l1">${recipe}<div>${panel}<div class="row" style="justify-content:flex-end;margin-top:1em">${next}</div></div></div>`;
 }
 
 function vHunt(){
@@ -1075,7 +1102,7 @@ function vSettings(){
     <fieldset><legend>隊員名字</legend><div class="f">${S.players.map((p,i)=>f('隊員 '+(i+1),'players.'+i,p,'text')).join('')}</div></fieldset>
     <fieldset><legend>第一關 尋小人</legend><div class="f">
       ${f('大隻數量','l1.big',S.l1.big)}${f('小隻數量','l1.small',S.l1.small)}
-      ${f('大隻換幾枚','l1.bigRate',S.l1.bigRate)}${f('小隻換幾枚','l1.smallRate',S.l1.smallRate)}</div></fieldset>
+      ${f('大隻換幾枚','l1.bigRate',S.l1.bigRate)}${f('小隻換幾枚','l1.smallRate',S.l1.smallRate)}${f('尋小人計時幾分鐘','l1.mins',S.l1.mins||10)}</div></fieldset>
     <div><button class="danger" data-act="reset">清除所有紀錄，重新開始</button></div>
   </div>`;
 }
@@ -1096,34 +1123,61 @@ function render(){
 function go(v){
   const n=isNaN(+v)?v:+v;
   if(n===view) return;
-  view=n; if(n==='intro') introStep=0; stopTimer(); loadTimer(); render(); document.getElementById('view').scrollTop=0;
+  view=n; if(n==='intro') introStep=0; loadTimer(); render(); tPill(); document.getElementById('view').scrollTop=0;
   if(n==='hunt'&&!S.hunt.settled) raidOpen();
   else if(eggOn()&&Math.random()<.15) setTimeout(()=>eggGirl(),1600);
 }
 
 /* ============ 計時器 ============ */
-let T={left:0,run:false,id:null};
-function loadTimer(){ T.left = view==='hunt' ? Math.round((+S.hunt.mins||6)*60) : (typeof view==='number' && LEVELS[view].secs) ? LEVELS[view].secs : 0; T.run=false; }
+const TMR={l1:{key:'l1',left:0,run:false,id:null,init:false},hunt:{key:'hunt',left:0,run:false,id:null,init:false}};
+const tKeyOf=v=>v===1?'l1':v==='hunt'?'hunt':null;
+const tDur=k=>k==='l1'?Math.round((+S.l1.mins||10)*60):Math.round((+S.hunt.mins||6)*60);
+const TNAME={l1:'尋小人',hunt:'突襲任務'};
+let T={left:0,run:false,id:null,dummy:true};
+function loadTimer(){ const k=tKeyOf(view); if(!k){ T={left:0,run:false,id:null,dummy:true}; return; } T=TMR[k]; if(!T.init){ T.left=tDur(k); T.init=true; } }
+function resetTimer(k){ const t=TMR[k]; stopTimer(t); t.left=tDur(k); t.init=true; paintClock(); tPill(); }
 function fmt(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
 function paintClock(){
   const c=document.getElementById('clock'); if(!c) return;
   c.textContent=fmt(T.left);
   c.classList.toggle('low',T.run&&T.left<=10&&T.left>0);
-  c.classList.toggle('end',T.left===0&&!T.run&&(typeof view==='number'||view==='hunt'));
+  c.classList.toggle('end',T.left===0&&!T.run&&!T.dummy);
   const b=document.getElementById('tbtn'); if(b) b.textContent=T.run?'暫停':(T.left===0?'時間到':'開始');
 }
-function beep(f=880,d=.25){ try{ const a=getAC(); if(!a) return; const o=a.createOscillator(),g=a.createGain(); o.frequency.value=f;o.connect(g);g.connect(a.destination);g.gain.setValueAtTime(.2,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+d);o.start();o.stop(a.currentTime+d);}catch(e){} }
-function stopTimer(){ clearInterval(T.id); T.run=false; }
+function beep(f=880,d=.25,type='sine',v=.2,when=0){ try{ const a=getAC(); if(!a) return; const o=a.createOscillator(),g=a.createGain(),t=a.currentTime+when; o.type=type; o.frequency.value=f;o.connect(g);g.connect(a.destination);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v*(.5+vol()),t+.005);g.gain.exponentialRampToValueAtTime(.001,t+d);o.start(t);o.stop(t+d+.02);}catch(e){} }
+function stopTimer(t){ t=t||T; clearInterval(t.id); t.id=null; t.run=false; }
 function toggleTimer(){
-  if(T.run){ stopTimer(); paintClock(); return; }
-  if(T.left<=0) return;
-  T.run=true; beep(660,.15);
-  T.id=setInterval(()=>{
-    T.left--; if(T.left<=3&&T.left>0) beep(700,.1);
-    if(T.left<=0){ T.left=0; stopTimer(); beep(500,.8); }
-    paintClock();
+  const t=T; if(t.dummy) return;
+  if(t.run){ stopTimer(t); paintClock(); tPill(); return; }
+  if(t.left<=0) return;
+  t.run=true; beep(660,.15);
+  t.id=setInterval(()=>{
+    t.left--;
+    if(t.left===60) beep(880,.2,'triangle',.2), beep(880,.2,'triangle',.2,.3);
+    if(t.left<=10&&t.left>0) beep(t.left<=3?990:760,.12,'square',.1);
+    if(t.left<=0){ t.left=0; stopTimer(t); timeUp(t.key); }
+    if(T===t) paintClock(); tPill();
   },1000);
-  paintClock();
+  paintClock(); tPill();
+}
+function alarmBeeps(){
+  for(let r=0;r<4;r++) for(let i=0;i<4;i++) beep(1400,.1,'square',.16,r*1.05+i*.15);
+  beep(220,3.8,'sawtooth',.05);
+}
+function timeUp(k){
+  alarmBeeps();
+  const st=document.getElementById('stage'); let el=document.getElementById('timeup'); if(el) el.remove();
+  el=document.createElement('div'); el.id='timeup';
+  el.innerHTML=`<div class="tu-card"><div class="tu-ic">⏰</div><div class="tu-t">時間到！</div><div class="tu-s">${k==='l1'?'尋小人任務結束囉！<br>請大家把找到的小人交給草莓王國公主 Naomi！':'突襲任務結束囉！<br>快把找到的小人數量記下來！'}</div><button class="tu-b">知道了</button></div>`;
+  st.appendChild(el); burst(120);
+  el.addEventListener('click',()=>el.remove());
+  setTimeout(()=>{ if(el.isConnected) el.remove(); },15000);
+}
+function tPill(){
+  let p=document.getElementById('tpill'); if(!p) return;
+  const cur=tKeyOf(view), run=Object.values(TMR).filter(t=>t.run&&t.key!==cur);
+  p.innerHTML=run.map(t=>`<button data-go="${t.key==='l1'?1:'hunt'}">⏱ ${TNAME[t.key]} <b>${fmt(t.left)}</b></button>`).join('');
+  p.style.display=run.length?'flex':'none';
 }
 
 /* ============ 互動 ============ */
@@ -1138,7 +1192,7 @@ document.addEventListener('click',e=>{
   const act=a.dataset.act;
   if(act==='tstart'){ const first=view==='hunt'&&!T.run&&T.left===Math.round((+S.hunt.mins||6)*60); toggleTimer();
     if(first){ burst(120); cheerSfx(); if(eggOn()) setTimeout(()=>eggGirl('run',true),300); } }
-  else if(act==='treset'){ stopTimer(); loadTimer(); paintClock(); }
+  else if(act==='treset'){ if(!T.dummy) resetTimer(T.key); }
   else if(act==='l1'){ const k=a.dataset.k, max=k==='bigFound'?S.l1.big:S.l1.small; S.l1[k]=Math.max(0,Math.min(max,S.l1[k]+ +a.dataset.d)); S.l1.settled=false; save(); render(); }
   else if(act==='settle'){ S.l1.settled=!S.l1.settled; if(S.l1.settled){ burst(80); if(eggOn()) setTimeout(()=>eggGirl('cheer',true),400); } save(); render(); }
   else if(act==='hunt'){ const k=a.dataset.k, max=k==='bigFound'?S.hunt.big:S.hunt.small, before=S.hunt[k]; S.hunt[k]=Math.max(0,Math.min(max,S.hunt[k]+ +a.dataset.d)); S.hunt.settled=false; save(); render();
@@ -1267,17 +1321,18 @@ function getAC(){
   return Music.ctx;
 }
 let audioUnlocked=false;
-function unlockAudio(){
+function unlockAudio(ev){
   try{ if(navigator.audioSession) navigator.audioSession.type='playback'; }catch(e){}
   const c=getAC(); if(!c) return;
   if(!audioUnlocked){ try{ const b=c.createBuffer(1,1,22050), s=c.createBufferSource(); s.buffer=b; s.connect(c.destination); s.start(0); audioUnlocked=true; }catch(e){} }
+  if(!Music.autoTried && ev && ev.type!=='keydown' && !(ev.target&&ev.target.closest&&ev.target.closest('#musicbtn'))){ Music.autoTried=true; if(!Music.on && S.music!==false) setTimeout(()=>{ if(!Music.on&&S.music!==false) musicStart(); },0); }
 }
 ['pointerdown','touchend','click','keydown'].forEach(ev=>document.addEventListener(ev,unlockAudio,{capture:true,passive:true}));
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden&&Music.ctx&&Music.ctx.state!=='running'){ try{ Music.ctx.resume(); }catch(e){} } });
 
 /* ============ 背景音樂（大廳、螢幕小遊戲各一首） ============ */
 var Music={on:false,ctx:null,master:null,comp:null,timer:null,step:0,t:0,audio:null,synth:false,noise:null,track:'lobby',noFile:{}};
-const TRACK_FILE={lobby:'bgm.mp3',game:'game.mp3'};
+const TRACK_FILE={lobby:'bgm.mp3',game:'game.mp3',story:'story.mp3'};
 const vol=()=>Math.max(0,Math.min(1,(S.vol==null?60:S.vol)/100));
 function setGainNow(p,v){ try{ const t=Music.ctx.currentTime; p.cancelScheduledValues(t); p.setValueAtTime(v,t); }catch(e){ p.value=v; } }
 function applyVolume(){ if(Music.master&&Music.synth) setGainNow(Music.master.gain,vol()*.55); if(Music.audio) Music.audio.volume=vol(); }
@@ -1326,12 +1381,23 @@ function gameStep(t,bar,st,sd){
   if(st===2||st===6||(bar===7&&st>=5)) snare(t);
   hat(t,.035); hat(t+sd/2,.02);
 }
-const SONGS={lobby:{bpm:108,play:lobbyStep},game:{bpm:150,play:gameStep}};
+/* 賓客任務影片：音樂盒風格的圓舞曲 */
+const SMEL=[[72,null,77,null,76,74],[72,null,67,null,69,70],[69,null,74,null,72,70],[69,null,67,null,null,null],
+            [72,null,77,null,79,81],[82,null,81,null,79,77],[79,null,76,null,72,74],[77,null,null,null,null,null]];
+const SCH=[[53,57,60],[48,52,55],[50,53,57],[46,50,53],[53,57,60],[46,50,53],[48,52,55],[53,57,60]];
+function storyStep(t,bar,st,sd){
+  const ch=SCH[bar], m=SMEL[bar][st];
+  if(m!=null) tone('sine',mtof(m),t,1.4,.15,3);
+  if(st===0) tone('triangle',mtof(ch[0]-12),t,.9,.17);
+  if(st===2||st===4) ch.forEach(n=>tone('triangle',mtof(n+12),t,.45,.035));
+  if(st===5) hat(t,.02);
+}
+const SONGS={lobby:{bpm:108,play:lobbyStep},game:{bpm:150,play:gameStep},story:{bpm:96,steps:6,play:storyStep}};
 function schedule(){
   if(!Music.master) return;
-  const song=SONGS[Music.track]||SONGS.lobby, c=Music.ctx, sd=60/song.bpm/2;
+  const song=SONGS[Music.track]||SONGS.lobby, c=Music.ctx, sd=60/song.bpm/2, n=song.steps||8;
   while(Music.t<c.currentTime+.25){
-    song.play(Music.t,Math.floor(Music.step/8)%8,Music.step%8,sd);
+    song.play(Music.t,Math.floor(Music.step/n)%8,Music.step%n,sd);
     Music.t+=sd; Music.step++;
   }
 }
@@ -2785,18 +2851,22 @@ function gvScenes(){
     {k:'intro',bg:MAP_IMG,tag:'序　章',title:'歡迎各位貴賓來到草莓王國！',text:`今天是草莓王國公主 Naomi 的 23 歲生日！\n全國上下都在準備甜甜的蛋糕派對，謝謝各位貴賓一起來幫公主慶生！`},
     {k:'people',bg:GV_IMG.candy,rev:true,tag:'第一章',title:`王國的 ${total} 位小子民`,text:`王國裡住著 ${total} 位小人子民：大隻的 ${l.big} 位、小隻的 ${l.small} 位。\n他們從一大早就忙著裝飾蛋糕、吹氣球、偷偷排練生日快樂歌……`},
     {k:'raid',bg:GV_IMG.town,tag:'第二章',title:'突發事件！子民們不見了！',text:`就在派對開始前，一陣調皮的草莓旋風吹過王國——\n${total} 位小人子民被吹散到王國的各個角落了！！`},
-    {k:'hide',bg:GV_IMG.fairy,rev:true,tag:'第三章',title:'他們躲在哪裡呢？',text:`有的躲進草莓屋、有的藏在花叢裡、有的爬上了城堡……\n大隻的比較好找；小隻的是超會躲的稀有子民，找到的禮物也更好喔！`},
+    {k:'hide',bg:GV_IMG.fairy,rev:true,tag:'第三章',title:'他們躲在哪裡呢？',text:`有的躲進草莓屋、有的藏在花叢裡、有的爬上了城堡……\n大隻的比較好找；小隻的是超會躲的稀有子民，找到的獎品也更好喔！`},
     {k:'rules',bg:MAP_IMG}
   ];
 }
 function gvLater(f,ms){ Guest.T.push(setTimeout(f,ms)); }
 function gvClear(){ Guest.T.forEach(clearTimeout); Guest.T=[]; clearInterval(Guest.typing); Guest.typing=null; Guest.anims=[]; }
+function gvFx(type,f,when,dur,g,opt){ const c=getAC(); if(!c) return; rsOsc(c,c.destination,type,f,c.currentTime+(when||0),dur,g*(.4+vol()),opt||{}); }
+function gvSwish(){ const c=getAC(); if(!c) return; rsNoiseHit(c,c.destination,c.currentTime,.5,.12*(.4+vol()),'bandpass',500,5000); }
 function guestOpen(){
-  const el=document.getElementById('guest'); el.className='on'; Guest.i=0; gvShow(0);
-  [523,659,784,1047,1319].forEach((f,i)=>sfx(f,.5,'sine',.09,i*.11));
+  const el=document.getElementById('guest'); el.className='on'; Guest.i=0;
+  if(!Music.on&&S.music!==false) musicStart();
+  musicSwitch('story'); gvShow(0);
+  [523,659,784,1047,1319,1568].forEach((f,i)=>gvFx('sine',f,i*.12,.9,.08));
 }
 function guestClose(){
-  gvClear(); rsStop(); bgmDuck(false);
+  gvClear(); rsStop(); bgmDuck(false); musicSwitch(G.cleanup?'game':'lobby');
   const el=document.getElementById('guest'); el.className=''; el.innerHTML='';
 }
 function gvType(el,text,hint){
@@ -2850,21 +2920,23 @@ function gvShow(i){
       <span class="gv-tag">賓客任務</span>
       <h2>請幫草莓王國找回 ${total} 位子民！</h2>
       <div class="sub">大隻 <b>${l.big} 位</b>、小隻 <b>${l.small} 位</b>，已經躲在家裡的各個角落了</div>
-      <div class="gv-steps">
+      <div class="gv-steps" style="grid-template-columns:repeat(3,1fr)">
         <div class="gv-step" style="animation-delay:.6s"><div class="ic">🔍</div><div class="n">STEP 1</div><div class="d">在家裡各個角落<br>找出小人</div></div>
-        <div class="gv-step" style="animation-delay:.8s"><div class="ic">🃏</div><div class="n">STEP 2</div><div class="d">拿給主持人<br>抽一張任務卡</div></div>
-        <div class="gv-step" style="animation-delay:1s"><div class="ic">🍓</div><div class="n">STEP 3</div><div class="d">完成任務卡上的<br>小互動</div></div>
-        <div class="gv-step" style="animation-delay:1.2s"><div class="ic">🎁</div><div class="n">STEP 4</div><div class="d">領取你的<br>小禮物！</div></div>
+        <div class="gv-step" style="animation-delay:.85s"><div class="ic">👑</div><div class="n">STEP 2</div><div class="d">把小人拿給<br>草莓王國公主 Naomi</div></div>
+        <div class="gv-step" style="animation-delay:1.1s"><div class="ic">🎁</div><div class="n">STEP 3</div><div class="d">兌換你的<br>小獎品！</div></div>
       </div>
-      <div class="gv-note">小隻的是 <b>稀有子民</b>，找到可以換 <b>更好的禮物</b> 喔！</div>
-      <button class="gv-go" data-gv="start">任務開始！</button>
+      <div class="gv-note">⏰ 限時 <b>${+l.mins||10} 分鐘</b>　・　小隻的是 <b>稀有子民</b>，可以換 <b>更好的獎品</b> 喔！</div>
+      <button class="gv-go" data-gv="start">任務開始！計時 ${+l.mins||10} 分鐘</button>
     </div>`;
   }
   el.innerHTML=dots+btns+`<div class="gv-scene">${inner}</div>`;
-  if(i>0) sfx(880,.25,'sine',.07), sfx(1319,.35,'sine',.06,.08);
+  if(i>0){ gvSwish(); gvFx('sine',1319,.12,.6,.06); gvFx('sine',1760,.22,.7,.05); }
+  if(s.k==='people'){ const n=S.l1.big+S.l1.small; for(let k=0;k<n;k++) gvFx('triangle',520+k*38,.9+k*.07,.12,.06,{to:900+k*38,glide:.08}); gvLater(()=>{ [659,880,1175].forEach((f,k)=>gvFx('triangle',f,k*.08,.3,.09)); },2400); }
+  if(s.k==='hide'){ const boing=()=>{ gvFx('sine',300+Math.random()*200,0,.35,.1,{to:900,glide:.18}); gvLater(boing,1100+Math.random()*900); }; gvLater(boing,900); }
+  if(s.k==='rules'){ [0,.25,.5].forEach((d,k)=>gvFx('triangle',784+k*196,.6+d,.2,.1)); }
   const t=document.getElementById('gvText'), h=document.getElementById('gvHint');
   if(t) gvLater(()=>gvType(t,s.text,h), s.k==='intro'?1300:1200);
-  if(s.k==='rules') gvLater(()=>{ [784,988,1175,1568].forEach((f,k)=>sfx(f,.3,'triangle',.1,k*.1)); burst(80); },500);
+  if(s.k==='rules') gvLater(()=>{ [784,988,1175,1568].forEach((f,k)=>gvFx('square',f,k*.1,.25,.06,{lp:3500})); gvFx('sawtooth',392,.45,1.2,.06,{lp:2500,lpTo:600}); burst(80); },500);
   if(s.k==='raid') gvRaid(s);
 }
 function gvRaid(s){
@@ -2917,7 +2989,7 @@ document.getElementById('guest').addEventListener('click',e=>{
   if(b){ e.stopPropagation(); const a=b.dataset.gv;
     if(a==='prev'){ if(Guest.i>0) gvShow(Guest.i-1); }
     else if(a==='close') guestClose();
-    else if(a==='start'){ guestClose(); if(view!==1) go(1); burst(200); rainDown(90,['🍓','🎁','✨','💖']); [523,659,784,1047].forEach((f,k)=>sfx(f,.18,'square',.08,k*.09)); sfx(1047,.8,'triangle',.12,.4); if(eggOn()) setTimeout(()=>eggGirl('cheer',true),600); }
+    else if(a==='start'){ guestClose(); if(view!==1) go(1); resetTimer('l1'); loadTimer(); toggleTimer(); burst(200); rainDown(90,['🍓','🎁','✨','💖']); [523,659,784,1047].forEach((f,k)=>sfx(f,.18,'square',.08,k*.09)); sfx(1047,.8,'triangle',.12,.4); if(eggOn()) setTimeout(()=>eggGirl('cheer',true),600); }
     return; }
   if(e.target.closest('.gv-rules')) return;
   const s=gvScenes()[Guest.i];
